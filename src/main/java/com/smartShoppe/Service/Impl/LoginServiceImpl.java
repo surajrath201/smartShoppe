@@ -1,51 +1,63 @@
 package com.smartShoppe.Service.Impl;
 
 
-import com.smartShoppe.Dao.IUserDetailsDao;
-import com.smartShoppe.Entity.UserDetailsEntity;
+import com.smartShoppe.Entity.UserDetails;
+import com.smartShoppe.Repositories.UserDetailsRepository;
 import com.smartShoppe.Util.ValidationResult;
 import com.smartShoppe.Dto.UserDetailsDto;
 import com.smartShoppe.Service.ILoginService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class ILoginServiceImpl implements ILoginService {
+public class LoginServiceImpl implements ILoginService {
 
     @Autowired
-    private IUserDetailsDao IUserDetailsDao;
+    private UserDetailsRepository userDetailsRepository;
 
     @Override
-    public UserDetailsDto getUserDetails(Integer userId){
+    public UserDetailsDto getUserDetails(Long userId){
 
         if (Objects.isNull(userId))
             throw new RuntimeException("user Id not found");
-        Optional<UserDetailsDto> optionalUserDetailsDto = IUserDetailsDao.getUserDetails(userId);
+        Optional<UserDetails> optionalUserDetailsDto = userDetailsRepository.findById(userId);
 
         if (optionalUserDetailsDto.isEmpty())
             throw new RuntimeException("User Id does not exist");
-        return optionalUserDetailsDto.get();
+        UserDetailsDto userDetailsDto = new UserDetailsDto();
+        BeanUtils.copyProperties(optionalUserDetailsDto.get(), userDetailsDto);
+        return userDetailsDto;
     }
 
     @Override
-    public Integer insertUserDetails(UserDetailsDto userDetailsDto) {
+    public Long insertUserDetails(UserDetailsDto userDetailsDto) {
 
         if (Objects.isNull(userDetailsDto))
             throw new RuntimeException("Nothing to insert");
-        UserDetailsEntity userDetailsEntity = new UserDetailsEntity();
-        BeanUtils.copyProperties(userDetailsDto, userDetailsEntity);
-        ValidationResult<UserDetailsEntity> validationResult = userDetailsEntity.validate();
+        UserDetails userDetails = new UserDetails();
+        BeanUtils.copyProperties(userDetailsDto, userDetails);
+        ValidationResult<UserDetails> validationResult = userDetails.validate();
 
         if (!validationResult.getValid())
             throw new RuntimeException(validationResult.getErrors().toString());
-        Integer usedId = IUserDetailsDao.insertUserDetails(validationResult.getData());
+        
+        try {
+            UserDetails savedUserDetails = userDetailsRepository.save(validationResult.getData());
+            if (Objects.isNull(savedUserDetails.getId())) {
+                throw new RuntimeException("Failed to insert");
+            }
+            return savedUserDetails.getId();
 
-        if (Objects.isNull(usedId))
-            throw new RuntimeException("Failed to insert");
-        return usedId;
+        } catch (DataIntegrityViolationException e) {
+            // Catch the exception for duplicate key violation
+            throw new RuntimeException("User with the same Email or Mobile Number already exists", e);
+        }
+
+
     }
 }

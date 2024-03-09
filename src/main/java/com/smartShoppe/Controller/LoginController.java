@@ -1,7 +1,7 @@
 package com.smartShoppe.Controller;
 
 import com.smartShoppe.Dto.UserDetailsDto;
-import com.smartShoppe.Service.LoginService;
+import com.smartShoppe.Service.ILoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +13,10 @@ import java.util.Objects;
 public class LoginController {
 
     @Autowired
-    private LoginService loginService;
+    private ILoginService loginService;
 
     @GetMapping(path = "/login")
-    public ResponseEntity userLogin(@RequestParam Integer userId){
+    public ResponseEntity userLogin(@RequestParam Long userId){
 
         if (Objects.isNull(userId))
             return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Empty User Id");
@@ -34,7 +34,7 @@ public class LoginController {
         if (Objects.isNull(userDetailsDto))
             return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("User details is empty");
         try {
-            Integer userId = loginService.insertUserDetails(userDetailsDto);
+            Long userId = loginService.insertUserDetails(userDetailsDto);
             return ResponseEntity.status(HttpStatus.OK).body(userId);
         } catch (Exception E){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(E.getMessage());

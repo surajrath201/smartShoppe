@@ -18,17 +18,11 @@ public class ValidationResult<T> {
     private T data;
     private List<ValidationError> errors;
 
-    public void addError(String field, String message){
-        if (this.errors == null)
-            this.errors = new ArrayList<>();
-        this.errors.add(new ValidationError(field, message));
-    }
-
     public static <T> ValidationResult<T> success(T data){
         return new ValidationResult<>(Boolean.TRUE, data, new ArrayList<>());
     }
 
-    public static ValidationResult<?> error(List<ValidationError> errors) {
+    public static <T> ValidationResult<T> error(List<ValidationError> errors) {
         return new ValidationResult<>(Boolean.FALSE, null, errors);
     }
 

@@ -1,8 +1,8 @@
-CREATE TABLE `userDetails` (
+CREATE TABLE `user_details` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `f_name` VARCHAR(45) NOT NULL,
-  `m_name` VARCHAR(45) NULL,
-  `l_name` VARCHAR(45) NOT NULL,
+  `first_name` VARCHAR(45) NOT NULL,
+  `middle_name` VARCHAR(45) NULL,
+  `last_name` VARCHAR(45) NOT NULL,
   `email` VARCHAR(50) NULL,
   `country_code` INT UNSIGNED NOT NULL,
   `mobile_number` VARCHAR(45) NULL,
