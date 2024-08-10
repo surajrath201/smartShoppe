@@ -12,13 +12,26 @@ import java.util.Date;
 @NoArgsConstructor
 public class UserDetailsDto {
 
+    private Long id;
+
     private String firstName;
+
     private String mName;
+
     private String lastName;
+
     private String email;
+
     private Integer countryCode;
+
     private String mobileNumber;
+
     private String password;
+
     private CustomerType type;
+
     private Date dob;
+
+    private String vendorName;
+
 }

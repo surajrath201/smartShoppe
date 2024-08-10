@@ -22,7 +22,7 @@ public class ValidationResult<T> {
         return new ValidationResult<>(Boolean.TRUE, data, new ArrayList<>());
     }
 
-    public static <T> ValidationResult<T> error(List<ValidationError> errors) {
+    public static ValidationResult error(List<ValidationError> errors) {
         return new ValidationResult<>(Boolean.FALSE, null, errors);
     }
 
