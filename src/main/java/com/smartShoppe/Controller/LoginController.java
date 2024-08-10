@@ -1,8 +1,9 @@
 package com.smartShoppe.Controller;
 
 import com.smartShoppe.Dto.UserDetailsDto;
+import com.smartShoppe.Dto.VendorDto;
 import com.smartShoppe.Service.ILoginService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.smartShoppe.Util.ResponseWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,34 +11,52 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 
 @RestController
+@RequestMapping(path = "/user")
 public class LoginController {
 
-    @Autowired
-    private ILoginService loginService;
+    private final ILoginService loginService;
 
-    @GetMapping(path = "/login")
-    public ResponseEntity userLogin(@RequestParam Long userId){
+    public LoginController(ILoginService loginService) {
+        this.loginService = loginService;
+    }
+
+    @GetMapping(path = "/details")
+    public ResponseEntity<ResponseWrapper> userLogin(@RequestParam Long userId){
 
         if (Objects.isNull(userId))
-            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Empty User Id");
+            return new ResponseEntity<>(new ResponseWrapper("User Id is Null"), HttpStatus.PRECONDITION_FAILED);
         try {
             UserDetailsDto userDetailsDto = loginService.getUserDetails(userId);
-            return ResponseEntity.status(HttpStatus.OK).body(userDetailsDto);
+            return new ResponseEntity<>(new ResponseWrapper(userDetailsDto), HttpStatus.OK);
         } catch (Exception E) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(E.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PostMapping(path = "/createUser")
-    public ResponseEntity insertUserDetails(@RequestBody UserDetailsDto userDetailsDto){
+    @PostMapping(path = "/details")
+    public ResponseEntity<ResponseWrapper> insertUserDetails(@RequestBody UserDetailsDto userDetailsDto){
 
         if (Objects.isNull(userDetailsDto))
-            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("User details is empty");
+            return new ResponseEntity<>(new ResponseWrapper("User Details should not be null"), HttpStatus.PRECONDITION_FAILED);
         try {
-            Long userId = loginService.insertUserDetails(userDetailsDto);
-            return ResponseEntity.status(HttpStatus.OK).body(userId);
+            UserDetailsDto userDetailsDtoCreated = loginService.insertUserDetails(userDetailsDto);
+
+            return new ResponseEntity<>(new ResponseWrapper(userDetailsDtoCreated), HttpStatus.CREATED);
         } catch (Exception E){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(E.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper(E.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping(path = "/vendor")
+    public ResponseEntity<ResponseWrapper> createVendor(@RequestBody VendorDto vendorDto){
+
+        if (Objects.isNull(vendorDto))
+            return new ResponseEntity<>(new ResponseWrapper("Vendor details cannot be null"), HttpStatus.PRECONDITION_FAILED);
+        try {
+            VendorDto vendorDtoCreated = loginService.createVendor(vendorDto);
+            return new ResponseEntity<>(new ResponseWrapper(vendorDtoCreated), HttpStatus.CREATED);
+        } catch (Exception e){
+            return new ResponseEntity<>(new ResponseWrapper(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 }

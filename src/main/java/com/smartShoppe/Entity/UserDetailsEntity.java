@@ -27,10 +27,11 @@ import java.util.stream.Collectors;
         @UniqueConstraint(name = "id_UNIQUE", columnNames = "id"),
         @UniqueConstraint(name = "email_mobile_unq", columnNames = {"email", "mobile_number"})
 })
-public class UserDetails {
+public class UserDetailsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_details_id_sequence")
+    @SequenceGenerator(name = "user_details_id_sequence", sequenceName = "user_details_id_sequence", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
@@ -46,7 +47,7 @@ public class UserDetails {
     private String lastName;
 
     @Email(message = "Invalid email address")
-    @Column(name = "email", unique = true)
+    @Column(name = "email")
     private String email;
 
     @NotNull(message = "Country code must not be null")
@@ -54,7 +55,7 @@ public class UserDetails {
     private Integer countryCode;
 
     @Pattern(regexp = "^[0-9]*$", message = "Invalid mobile number format")
-    @Column(name = "mobile_number", unique = true)
+    @Column(name = "mobile_number")
     private String mobileNumber;
 
     @NotBlank(message = "Password must not be blank")
@@ -81,9 +82,20 @@ public class UserDetails {
         return (email != null && !email.isEmpty()) != (mobileNumber != null && !mobileNumber.isEmpty());
     }
 
-    public ValidationResult<UserDetails> validate(){
+    @PrePersist
+    protected void onCreate() {
+        createdTimestamp = new Date(System.currentTimeMillis());
+        modifiedTimestamp = new Date(System.currentTimeMillis());
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        modifiedTimestamp = new Date(System.currentTimeMillis());
+    }
+
+    public ValidationResult<UserDetailsEntity> validate(){
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        Set<ConstraintViolation<UserDetails>> violations = validator.validate(this);
+        Set<ConstraintViolation<UserDetailsEntity>> violations = validator.validate(this);
         if (!violations.isEmpty()){
             List<ValidationError> result = violations.stream()
                                            .map(violation ->
